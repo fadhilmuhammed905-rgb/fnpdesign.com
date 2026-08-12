@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Media Edit & Chat Studio</title>
+  <style>
+    :root {
+      --bg-dark: #1e1e24;
+      --bg-panel: #2b2d42;
+      --accent: #6c5ce7;
+      --accent-hover: #5a4bcf;
+      --text-light: #f8f9fa;
+      --text-muted: #a0a0a0;
+      --border: #3d405b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Main Container Split Layout */
+    .app-container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Left Panel: Media Workspace */
+    .editor-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      background-color: #121215;
+    }
+
+    .editor-header {
+      padding: 1rem;
+      background-color: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .canvas-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #imageCanvas, #videoPlayer {
+      max-width: 100%;
+      max-height: 70vh;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    #videoPlayer {
+      display: none;
+    }
+
+    /* Media Controls Bar */
+    .toolbar {
+      padding: 1rem;
+      background-color: var(--bg-panel);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .control-group label {
+      color: var(--text-light);
+      font-weight: 600;
+    }
+
+    input[type="range"] {
+      accent-color: var(--accent);
+    }
+
+    /* Right Panel: Chat Interface */
+    .chat-panel {
+      width: 380px;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-panel);
+    }
+
+    .chat-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: bold;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: flex-start;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background-color: var(--accent);
+      color: #fff;
+    }
+
+    .message.bot {
+      align-self: flex-start;
+      background-color: var(--border);
+      color: var(--text-light);
+    }
+
+    .chat-input-area {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .chat-input-area input[type="text"] {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      outline: none;
+    }
+
+    .btn {
+      padding: 0.75rem 1.25rem;
+      border-radius: 6px;
+      border: none;
+      background-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .btn:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Media Editor Studio -->
+    <div class="editor-panel">
+      <div class="editor-header">
+        <h2>Studio Canvas</h2>
+        <div class="file-input-wrapper">
+          <button class="btn">Upload Image / Video</button>
+          <input type="file" id="mediaUpload" accept="image/*,video/*" />
+        </div>
+      </div>
+
+      <div class="canvas-wrapper">
+        <canvas id="imageCanvas"></canvas>
+        <video id="videoPlayer" controls></video>
+      </div>
+
+      <!-- Editing Controls Toolbar -->
+      <div class="toolbar">
+        <div class="control-group">
+          <label for="brightness">Brightness</label>
+          <input type="range" id="brightness" min="0" max="200" value="100" />
+        </div>
+        <div class="control-group">
+          <label for="contrast">Contrast</label>
+          <input type="range" id="contrast" min="0" max="200" value="100" />
+        </div>
+        <div class="control-group">
+          <label for="saturation">Saturate</label>
+          <input type="range" id="saturation" min="0" max="200" value="100" />
+        </div>
+        <div class="control-group">
+          <label for="grayscale">Grayscale</label>
+          <input type="range" id="grayscale" min="0" max="100" value="0" />
+        </div>
+        <button class="btn" id="resetBtn" style="margin-left: auto;">Reset Filters</button>
+      </div>
+    </div>
+
+    <!-- AI Chat Assistant Panel -->
+    <div class="chat-panel">
+      <div class="chat-header">Media Assistant</div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="message bot">
+          Hello! Upload an image or video to get started. You can use the sliders below or chat with me to apply edits or ask questions.
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <input type="text" id="userInput" placeholder="Ask or type an editing action..." />
+        <button class="btn" id="sendBtn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Elements
+    const mediaUpload = document.getElementById('mediaUpload');
+    const canvas = document.getElementById('imageCanvas');
+    const ctx = canvas.getContext('2d');
+    const video = document.getElementById('videoPlayer');
+    const chatMessages = document.getElementById('chatMessages');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // Controls
+    const brightnessInput = document.getElementById('brightness');
+    const contrastInput = document.getElementById('contrast');
+    const saturationInput = document.getElementById('saturation');
+    const grayscaleInput = document.getElementById('grayscale');
+
+    let currentMediaType = null; // 'image' or 'video'
+    let loadedImage = null;
+
+    // Handle File Upload
+    mediaUpload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const fileURL = URL.createObjectURL(file);
+
+      if (file.type.startsWith('image/')) {
+        currentMediaType = 'image';
+        video.style.display = 'none';
+        canvas.style.display = 'block';
+
+        loadedImage = new Image();
+        loadedImage.onload = () => {
+          canvas.width = loadedImage.width;
+          canvas.height = loadedImage.height;
+          applyFilters();
+          addBotMessage(`Loaded image: ${file.name}`);
+        };
+        loadedImage.src = fileURL;
+      } else if (file.type.startsWith('video/')) {
+        currentMediaType = 'video';
+        canvas.style.display = 'none';
+        video.style.display = 'block';
+        video.src = fileURL;
+        applyFilters();
+        addBotMessage(`Loaded video: ${file.name}`);
+      }
+    });
+
+    // Apply Filters function
+    function applyFilters() {
+      const filterString = `
+        brightness(${brightnessInput.value}%) 
+        contrast(${contrastInput.value}%) 
+        saturate(${saturationInput.value}%) 
+        grayscale(${grayscaleInput.value}%)
+      `;
+
+      if (currentMediaType === 'image' && loadedImage) {
+        ctx.filter = filterString;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(loadedImage, 0, 0, canvas.width, canvas.height);
+      } else if (currentMediaType === 'video') {
+        video.style.filter = filterString;
+      }
+    }
+
+    // Event listeners for sliders
+    [brightnessInput, contrastInput, saturationInput, grayscaleInput].forEach(slider => {
+      slider.addEventListener('input', applyFilters);
+    });
+
+    // Reset Filters
+    resetBtn.addEventListener('click', () => {
+      brightnessInput.value = 100;
+      contrastInput.value = 100;
+      saturationInput.value = 100;
+      grayscaleInput.value = 0;
+      applyFilters();
+      addBotMessage("Filters reset to default.");
+    });
+
+    // Chat functionality
+    function addUserMessage(text) {
+      const msg = document.createElement('div');
+      msg.className = 'message user';
+      msg.textContent = text;
+      chatMessages.appendChild(msg);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function addBotMessage(text) {
+      const msg = document.createElement('div');
+      msg.className = 'message bot';
+      msg.textContent = text;
+      chatMessages.appendChild(msg);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function handleChatSubmit() {
+      const text = userInput.value.trim();
+      if (!text) return;
+
+      addUserMessage(text);
+      userInput.value = '';
+
+      // Simple keyword response simulator
+      const lower = text.toLowerCase();
+      setTimeout(() => {
+        if (lower.includes('black and white') || lower.includes('grayscale')) {
+          grayscaleInput.value = 100;
+          applyFilters();
+          addBotMessage("Applied grayscale filter to your media.");
+        } else if (lower.includes('bright') || lower.includes('brighter')) {
+          brightnessInput.value = Math.min(200, parseInt(brightnessInput.value) + 25);
+          applyFilters();
+          addBotMessage("Increased brightness!");
+        } else if (lower.includes('reset')) {
+          resetBtn.click();
+        } else {
+          addBotMessage("I received your prompt! In a full backend integration, this is where AI models (like WebGPU or API calls) process your command.");
+        }
+      }, 500);
+    }
+
+    sendBtn.addEventListener('click', handleChatSubmit);
+    userInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') handleChatSubmit();
+    });
+  </script>
+</body>
+</html>
