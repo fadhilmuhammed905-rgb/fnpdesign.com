@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FNP Search</title>
+  <meta name="description" content="FNP Search - a simple, fast search homepage.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mini">
+      <span class="logo-mark">F</span>
+      <span>FNP</span>
+    </div>
+    <nav>
+      <a href="https://www.google.com/" target="_blank" rel="noopener">Web</a>
+      <a href="https://images.google.com/" target="_blank" rel="noopener">Images</a>
+      <a href="https://news.google.com/" target="_blank" rel="noopener">News</a>
+      <button id="themeBtn" class="icon-btn" aria-label="Toggle dark mode">☾</button>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <div class="logo">
+      <span class="f">F</span><span class="n">N</span><span class="p">P</span>
+      <small>SEARCH</small>
+    </div>
+
+    <form id="searchForm" class="search-box">
+      <span class="search-icon">⌕</span>
+      <input id="searchInput" type="search" placeholder="Search the web..." autocomplete="off" aria-label="Search">
+      <button type="button" id="clearBtn" class="clear-btn" aria-label="Clear">×</button>
+      <button type="submit" class="search-btn">Search</button>
+    </form>
+
+    <div class="quick">
+      <button data-type="web">🔎 Web Search</button>
+      <button data-type="images">🖼️ Images</button>
+      <button data-type="news">📰 News</button>
+    </div>
+
+    <div id="recentBox" class="recent hidden">
+      <div class="recent-title">Recent searches</div>
+      <div id="recentList"></div>
+    </div>
+  </main>
+
+  <footer>
+    <div>FNP Search • Simple and fast</div>
+    <div>
+      <a href="#" id="aboutLink">About</a>
+      <a href="#" id="privacyLink">Privacy</a>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
